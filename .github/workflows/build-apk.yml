@@ -36,32 +36,53 @@ jobs:
           cp android/app/src/main/res/xml/reelguard_accessibility_service.xml build_workspace/android/app/src/main/res/xml/
 
       - name: Register accessibility service
+        
+      - name: Register accessibility service
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
+
           p = Path('build_workspace/android/app/src/main/AndroidManifest.xml')
-          s = p.read_text()
-          service = '''\n        <service\n            android:name=".ReelGuardAccessibilityService"\n            android:label="ReelGuard"\n            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"\n            android:exported="true">\n            <intent-filter>\n                <action android:name="android.accessibilityservice.AccessibilityService" />\n            </intent-filter>\n            <meta-data\n                android:name="android.accessibilityservice"\n                android:resource="@xml/reelguard_accessibility_service" />\n        </service>\n'''
+          s = p.read_text(encoding='utf-8')
+
+          service = '''
+                  <service
+                      android:name=".ReelGuardAccessibilityService"
+                      android:label="ReelGuard"
+                      android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.accessibilityservice.AccessibilityService" />
+                      </intent-filter>
+                      <meta-data
+                          android:name="android.accessibilityservice"
+                          android:resource="@xml/reelguard_accessibility_service" />
+                  </service>
+          '''
+
           if 'ReelGuardAccessibilityService' not in s:
-              s = s.replace('</application>', service + '    </application>')
-          p.write_text(s)
-                    strings = Path('build_workspace/android/app/src/main/res/values/strings.xml')
+              s = s.replace('</application>', service + '\\n    </application>')
+
+          p.write_text(s, encoding='utf-8')
+
+          strings = Path('build_workspace/android/app/src/main/res/values/strings.xml')
           strings.parent.mkdir(parents=True, exist_ok=True)
 
           if strings.exists():
               t = strings.read_text(encoding='utf-8')
           else:
-              t = '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n</resources>\n'
+              t = '<?xml version="1.0" encoding="utf-8"?>\\n<resources>\\n</resources>\\n'
 
           if 'reelguard_accessibility_description' not in t:
               t = t.replace(
                   '</resources>',
-                  '    <string name="reelguard_accessibility_description">Detect selected apps to help reduce short-video scrolling.</string>\n</resources>'
+                  '    <string name="reelguard_accessibility_description">Detect selected apps to help reduce short-video scrolling.</string>\\n</resources>'
               )
 
           strings.write_text(t, encoding='utf-8')
           PY
+
 
       - name: Get dependencies
         working-directory: build_workspace
