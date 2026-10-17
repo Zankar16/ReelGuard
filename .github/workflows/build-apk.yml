@@ -46,11 +46,21 @@ jobs:
           if 'ReelGuardAccessibilityService' not in s:
               s = s.replace('</application>', service + '    </application>')
           p.write_text(s)
-          strings = Path('build_workspace/android/app/src/main/res/values/strings.xml')
-          t = strings.read_text()
+                    strings = Path('build_workspace/android/app/src/main/res/values/strings.xml')
+          strings.parent.mkdir(parents=True, exist_ok=True)
+
+          if strings.exists():
+              t = strings.read_text(encoding='utf-8')
+          else:
+              t = '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n</resources>\n'
+
           if 'reelguard_accessibility_description' not in t:
-              t = t.replace('</resources>', '    <string name="reelguard_accessibility_description">Detect selected apps to help reduce short-video scrolling.</string>\n</resources>')
-          strings.write_text(t)
+              t = t.replace(
+                  '</resources>',
+                  '    <string name="reelguard_accessibility_description">Detect selected apps to help reduce short-video scrolling.</string>\n</resources>'
+              )
+
+          strings.write_text(t, encoding='utf-8')
           PY
 
       - name: Get dependencies
