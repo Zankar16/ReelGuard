@@ -1,8 +1,8 @@
 package com.example.reelguard
 
+import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import android.content.SharedPreferences
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -16,7 +16,7 @@ class MainActivity : FlutterActivity() {
         "setBlocking" -> {
           val enabled = call.argument<Boolean>("enabled") ?: false
           val packages = call.argument<List<String>>("packages") ?: emptyList()
-          getSharedPreferences("reelguard", MODE_PRIVATE).edit()
+          getSharedPreferences("reelguard", Context.MODE_PRIVATE).edit()
             .putBoolean("enabled", enabled).putStringSet("packages", packages.toSet()).apply()
           result.success(true)
         }

@@ -72,7 +72,46 @@ class _DashboardState extends State<Dashboard> {
       const SizedBox(height: 20),
       _section('Daily scrolling limit', '$dailyLimit minutes', Icons.hourglass_bottom, Column(children: [Slider(value: dailyLimit.toDouble(), min: 5, max: 120, divisions: 23, activeColor: lavender, label: '$dailyLimit min', onChanged: (v) => setState(() => dailyLimit = v.round())), const Text('Starter setting only — daily usage accounting is not wired up yet.', style: TextStyle(color: Colors.white54, fontSize: 12))])),
       const SizedBox(height: 14),
-      _section('Focus session', '$focusMinutes min', Icons.center_focus_strong, Column(children: [Slider(value: focusMinutes.toDouble(), min: 5, max: 90, divisions: 17, activeColor: lavender, label: '$focusMinutes min', onChanged: (v) => setState(() => focusMinutes = v.round())), SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: () => showDialog(context: context, builder: (c) => AlertDialog(title: const Text('Focus session'), content: Text('Your planned focus session is $focusMinutes minutes. Enable the blocker above to block selected apps.'), actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text('Got it'))])), icon: const Icon(Icons.play_arrow), label: const Text('Start focus session'))])) ,
+      _section(
+        'Focus session',
+        '$focusMinutes min',
+        Icons.center_focus_strong,
+        Column(
+          children: [
+            Slider(
+              value: focusMinutes.toDouble(),
+              min: 5,
+              max: 90,
+              divisions: 17,
+              activeColor: lavender,
+              label: '$focusMinutes min',
+              onChanged: (v) => setState(() => focusMinutes = v.round()),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (c) => AlertDialog(
+                    title: const Text('Focus session'),
+                    content: Text(
+                      'Your planned focus session is $focusMinutes minutes. Enable the blocker above to block selected apps.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(c),
+                        child: const Text('Got it'),
+                      ),
+                    ],
+                  ),
+                ),
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Start focus session'),
+              ),
+            ),
+          ],
+        ),
+      ),
       const SizedBox(height: 22), const Text('Privacy first', style: TextStyle(fontWeight: FontWeight.bold)), const SizedBox(height: 6), const Text('ReelGuard uses Android Accessibility Service to detect when a selected app opens. It does not read messages or collect your content. Blocking works only after you enable the service in Android Settings.', style: TextStyle(color: Colors.white60, height: 1.45)),
     ]),
   );

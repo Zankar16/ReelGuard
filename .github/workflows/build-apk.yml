@@ -6,7 +6,7 @@ on:
     branches: [main, master]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -60,7 +60,7 @@ jobs:
           '''
 
           if 'ReelGuardAccessibilityService' not in s:
-              s = s.replace('</application>', service + '\\n    </application>')
+              s = s.replace('</application>', service + '\n    </application>')
 
           p.write_text(s, encoding='utf-8')
 
@@ -96,3 +96,20 @@ jobs:
           name: ReelGuard-Android-APK
           path: build_workspace/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
+
+      - name: Deploy APK to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: latest
+          name: ReelGuard Latest Release
+          body: |
+            Automatic build and deployment of the ReelGuard Android APK.
+
+            ### Download & Install
+            - Download **[app-release.apk](https://github.com/Zankar16/ReelGuard/releases/download/latest/app-release.apk)**
+            - Transfer or open on your Android device and install.
+          files: build_workspace/build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
