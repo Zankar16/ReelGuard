@@ -1,0 +1,69 @@
+name: Build ReelGuard APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate Android platform project
+        run: flutter create --platforms=android --org com.example --project-name reelguard build_workspace
+
+      - name: Copy ReelGuard app sources
+        shell: bash
+        run: |
+          cp pubspec.yaml build_workspace/pubspec.yaml
+          rm -rf build_workspace/lib
+          cp -r lib build_workspace/lib
+          mkdir -p build_workspace/android/app/src/main/kotlin/com/example/reelguard
+          cp android/app/src/main/kotlin/com/example/reelguard/*.kt build_workspace/android/app/src/main/kotlin/com/example/reelguard/
+          mkdir -p build_workspace/android/app/src/main/res/xml
+          cp android/app/src/main/res/xml/reelguard_accessibility_service.xml build_workspace/android/app/src/main/res/xml/
+
+      - name: Register accessibility service
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('build_workspace/android/app/src/main/AndroidManifest.xml')
+          s = p.read_text()
+          service = '''\n        <service\n            android:name=".ReelGuardAccessibilityService"\n            android:label="ReelGuard"\n            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"\n            android:exported="true">\n            <intent-filter>\n                <action android:name="android.accessibilityservice.AccessibilityService" />\n            </intent-filter>\n            <meta-data\n                android:name="android.accessibilityservice"\n                android:resource="@xml/reelguard_accessibility_service" />\n        </service>\n'''
+          if 'ReelGuardAccessibilityService' not in s:
+              s = s.replace('</application>', service + '    </application>')
+          p.write_text(s)
+          strings = Path('build_workspace/android/app/src/main/res/values/strings.xml')
+          t = strings.read_text()
+          if 'reelguard_accessibility_description' not in t:
+              t = t.replace('</resources>', '    <string name="reelguard_accessibility_description">Detect selected apps to help reduce short-video scrolling.</string>\n</resources>')
+          strings.write_text(t)
+          PY
+
+      - name: Get dependencies
+        working-directory: build_workspace
+        run: flutter pub get
+
+      - name: Build release APK
+        working-directory: build_workspace
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReelGuard-Android-APK
+          path: build_workspace/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
